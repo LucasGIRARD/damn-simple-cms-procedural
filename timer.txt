@@ -1,0 +1,6 @@
+<?php
+$debut = microtime(true);
+//votre page
+$fin = microtime(true);
+echo '<p class="text">Page exécutée en '.round(($fin - $debut),5).' secondes.</p>';
+?>

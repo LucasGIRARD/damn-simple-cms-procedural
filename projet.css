@@ -1,21 +1,53 @@
-h2, th, td
-        {
-            text-align : center ;
-    }
-
-table
-        {
-            border-collapse : collapse ;
-            border : 2px solid black ;
-            margin : auto ;
-    }
-
-th, td
-        {
-            border : 1px solid black ;
-    }
-
 body
-        {
-		    text-align : center ;
-    }
+{
+text-align:center;
+}
+.tabb1px
+{ 
+width:700px;
+margin-left: auto;
+margin-right: auto;
+border-collapse:collapse;
+}
+.tabb1px th
+{ 
+border: 1px solid;
+}
+.tabb1px td
+{ 
+border: 1px solid;
+}
+.tabbelement1px
+{ 
+margin-left: auto;
+margin-right: auto;
+border-collapse:collapse;
+}
+.tabbelement1px td
+{ 
+border: 1px solid;
+}
+.tabbbutton1px
+{ 
+margin-left: auto;
+margin-right: auto;
+border-collapse:collapse;
+}
+.tabbbutton1px td
+{ 
+border: 0px;
+}
+#log
+{
+width:100%;
+background-color:grey;
+color:red;
+}
+#log table
+{
+width:100%;
+}
+img
+{
+border:0px;
+}
