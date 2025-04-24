@@ -1,0 +1,21 @@
+h2, th, td
+        {
+            text-align : center ;
+    }
+
+table
+        {
+            border-collapse : collapse ;
+            border : 2px solid black ;
+            margin : auto ;
+    }
+
+th, td
+        {
+            border : 1px solid black ;
+    }
+
+body
+        {
+		    text-align : center ;
+    }
