@@ -1,162 +1,160 @@
+<?php
+$debut = microtime(true);
+
+session_start();  
+if (!isset($_SESSION['pseudo'])) 
+{ 
+header ('Location: index.php'); 
+exit();  
+}  
+ ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
    <head>
        <title>panel d'admin</title>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-		 <style type="text/css">
-        h2, th, td
-        {
-            text-align:center;
-        }
-        table
-        {
-            border-collapse:collapse;
-            border:2px solid black;
-            margin:auto;
-        }
-        th, td
-        {
-            border:1px solid black;
-        }
-        </style>
+		 <link rel="stylesheet" media="screen" type="text/css" title="Essai" href="projet.css" />
     </head>
-   
     <body>
- 
-<h2><a href="rediger_page.php">Ajouter une page</a></h2> </br>
-<h2><a href="index.php">Retour a l'index</a></h2> </br>
+
+	
 <?php
 mysql_connect("localhost", "root", "root") or die(mysql_error());
 mysql_select_db("admin") or die(mysql_error());
-//-----------------------------------------------------
-// Vérification 1 : est-ce qu'on veut poster une news ?
-//-----------------------------------------------------
-		  
-if (isset($_POST['titre']) AND isset($_POST['contenu']) )
-{
-	$titre = addslashes($_POST['titre']);
-    $contenu = addslashes($_POST['contenu']);
 
-    // On vérifie si c'est une modification de news ou pas
-    if ($_POST['id_page'] == 0)
-    {
-        // Ce n'est pas une modification, on crée une nouvelle entrée dans la table
-		$href2="<a href=\"index.php?page=". $titre ."\">". $titre ."</a>" ;
-        mysql_query("INSERT INTO page VALUES('', '" . $titre . "', '" . $contenu . "', '" . time() . "', '" . $href2 . "','')") or die(mysql_error()); 
-    }
-    else
-    {
-        $href = addslashes($_POST['href']);	
-        // On protège la variable "id_news" pour éviter une faille SQL
-        $_POST['id_page'] = addslashes($_POST['id_page']);
-        // C'est une modification, on met juste à jour le titre et le contenu
-        mysql_query("UPDATE page SET titre='" . $titre . "',href='" .$href. "', contenu='" . $contenu . "' WHERE id='" . $_POST['id_page'] . "'") or die(mysql_error()); 
-    }
-}
- 
-//--------------------------------------------------------
-// Vérification 2 : est-ce qu'on veut supprimer une news ?
-//--------------------------------------------------------
-if (isset($_GET['supprimer_page'])) // Si on demande de supprimer une news
+
+
+
+/*-----------------------------------------------------
+Vérification 1 : est-ce qu'on veut ajouter une page ?
+-----------------------------------------------------*/
+if (isset($_POST['action']))
 {
-    // Alors on supprime la news correspondante
-    // On protège la variable "id_news" pour éviter une faille SQL
-    $_GET['supprimer_page'] = addslashes($_GET['supprimer_page']);
-    mysql_query('DELETE FROM page WHERE id=\'' . $_GET['supprimer_page'] . '\'') or die(mysql_error());
+	if ($_POST['action'] == 'ajout_page' )
+	{
+		$id_page = $_POST['id_page'];
+		$titre = $_POST['titre'];
+
+		$heure = $_POST['heure'];
+		$minute = $_POST['minute'];
+		$mois = $_POST['mois'];
+		$jour = $_POST['jour'];
+		$annee = $_POST['annee'];
+
+		
+		$nbr_page_titre = mysql_query("SELECT COUNT(*) AS nbre_entrees FROM page WHERE titre='$titre'") or die(mysql_error());
+		$tableau_nbr_page_titre = mysql_fetch_array($nbr_page_titre) or die(mysql_error());
+		
+		
+		if ($tableau_nbr_page_titre['nbre_entrees'] == "1")
+		{
+			echo "Probleme : Ce nom de page est déjà utilisé!";
+		}
+		else
+		{
+			$date = mktime ($heure, $minute, 0, $mois, $jour, $annee);
+
+			
+			mysql_query("INSERT INTO page VALUES('', '" . $id_page . "', '" . $date . "', '', '" . $titre . "')") or die(mysql_error()); 
+			
+			echo "page ajoutée!";
+		}
+
+	}
+
+/*-------------------------------------------------------
+Vérification 2 : est-ce qu'on veut supprimer une page ?
+--------------------------------------------------------*/
+
+	elseif ($_POST['action'] == 'supprimer_page')
+	{
+		$page = $_POST['page'];
+		
+		mysql_query("DELETE FROM contenu WHERE page='$page'") or die(mysql_error());
+		mysql_query("DELETE FROM page WHERE titre='$page'") or die(mysql_error());
+	}
 }
 
 ?>
-<table><tr>
+<h3><a href="general.php">Configuration general</a></h3>
+<h3><a href="check.php">Checklist</a></h3>
+<h3><a href="module.php">Module</a></h3>
+<h3><a href="creer_page.php">Ajouter une page</a></h3>
+<h3><a href="index.php">Retour a l'index</a></h3>
+
+<br />
+<br />
+
+<table class="tabb1px"><tr>
+<th>Titre</th>
 <th>Modifier</th>
 <th>Supprimer</th>
-<th>Titre</th>
-<th>Date</th>
-<th>page vide</th>
-<th>Quel page doit être votre index ?</th>
+<th>Date de creation</th>
+<th>Date de modification</th>
+<th>page vide ?</th>
 </tr>
 <?php
-$retour = mysql_query('SELECT * FROM page ORDER BY id') or die(mysql_error());
-while ($donnees = mysql_fetch_array($retour)) // On fait une boucle pour lister les news
+$table_page = mysql_query('SELECT * FROM page ORDER BY id_page') or die(mysql_error());
+while ($tableau_table_page = mysql_fetch_array($table_page))
 {
 ?>
-<tr>
-<td><?php echo '<a href="rediger_page.php?modifier_page=' . $donnees['id'] . '">'; ?>Modifier</a></td>
-<td><?php echo '<a href="liste_page.php?supprimer_page=' . $donnees['id'] . '">'; ?>Supprimer</a></td>
-<td><?php echo stripslashes($donnees['titre']); ?></td>
-<td><?php echo date('d/m/Y', $donnees['timestamp']); ?></td>
-<td><?php
-$resp=mysql_query("SELECT contenu FROM page");
-$data3=mysql_fetch_array($resp);
-if($data3[0] == false)
-{
-echo "oui";
-}
-else
-{
-echo "non";
-}
-?></td>
-<td>
-<form method="post" action="liste_page.php">
-       <input type="radio" name="index" value="<?php echo $donnees['titre'] ?>" id="<?php echo $donnees['titre'] ?>" /> <label for="<?php echo $donnees['titre'] ?>"> </label>
-
-</td>
-</tr>
+	<tr>
+	<td>
+		<?php echo stripslashes($tableau_table_page['titre']); ?>
+	</td>
+	<td>
+	<form method="post" action="rediger_page.php">
+		<input type="hidden" name="page" value="<?php echo $tableau_table_page['titre']; ?>" />
+		<input type="submit" value="modifier" />
+		</form>
+	</td>
+	<td>
+		<form method="post" action="liste_page.php">
+		<input type="hidden" name="action" value="supprimer_page" />
+		<input type="hidden" name="page" value="<?php echo $tableau_table_page['titre']; ?>" />
+		<input type="submit" value="supprimer" />
+		</form>
+	</td>
+	<td>
+		le <?php echo date('d/m/Y', $tableau_table_page['timestamp']); ?><br /> à <?php echo date('H:i', $tableau_table_page['timestamp']); ?>
+	</td>
+	<td>
+		<?php
+		if($tableau_table_page['timestamp2'] == '0')
+		{
+		  echo "aucune modification";
+		}
+		else
+		{
+		  echo "le ", date('d/m/Y', $tableau_table_page['timestamp2']); ?><br /> à <?php echo date('H:i', $tableau_table_page['timestamp2']);
+		}
+		 
+		?>
+	</td> 
+	<td>
+		<?php
+		$contenu=mysql_query("SELECT * FROM contenu WHERE page='" . $tableau_table_page['titre'] . "'");
+		$tableau_contenu=mysql_fetch_array($contenu);
+		if($tableau_contenu['id'] == false)
+		{
+			echo "oui";
+		}
+			else
+		{
+			echo "non";
+		}
+		?>
+	</td>
+	</tr>
 
 <?php
-} // Fin de la boucle qui liste les news
+}
 ?>
 
 </table>
-<br \>
-<br \>
-<input type="submit" value="appliquer" />
-</form>
 <?php
-if (isset($_POST['index']) ) // Si les variables existent
-{
-    if ($_POST['index'] != NULL ) // Si on a quelque chose à enregistrer
-    {
-        mysql_query(" UPDATE page SET indexp='0' WHERE indexp='1' ") or die(mysql_error());
-        $indexp = mysql_real_escape_string(htmlspecialchars($_POST['index']));
-        mysql_query(" UPDATE page SET indexp='1' WHERE titre='$indexp' ") or die(mysql_error());
-
-    }
-}
-?>
-<br \>
-<br \>
-<?php
-$res=mysql_query("SELECT indexp FROM page");
-$a=false;
-$b=false;
-
-while($data=mysql_fetch_array($res))
-{
-if($data[0] == "1") //data[0] parce tu n'as qu'un champ dans le select
-{
-$a="1";
-}
-elseif($data[0] == "0")
-{
-$b="1";
-}
-}
-
-if($b == false && $a == false) //data[0] parce tu n'as qu'un champ dans le select
-{
-echo "il existe aucune page!";
-}
-
-elseif($a == "1") //data[0] parce tu n'as qu'un champ dans le select
-{
-echo "tout à l'air opérationnel!";
-}
-
-elseif($a == false && $b == "1")
-{
-echo "index non choisi!";
-}
+$fin = microtime(true);
+echo '<p class="text">Page exécutée en '.round(($fin - $debut),5).' secondes.</p>';
 ?>
 </body>
 </html>
